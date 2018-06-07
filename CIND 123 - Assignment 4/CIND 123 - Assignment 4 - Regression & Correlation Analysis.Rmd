@@ -1,0 +1,159 @@
+---
+title: 'CIND 123 Winter 2018 - Assignment #4'
+author: "Brendan Dagys"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+Use RStudio for this assignment. 
+Edit the file `assignment-4.Rmd` and insert your R code where wherever you see the string "INSERT YOUR ANSWER HERE"
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. 
+
+
+## Sample Question and Solution
+
+Use `seq()` to create the vector $(2,4,6,\ldots,20)$.
+
+```{r}
+#Insert your code here.
+seq(2,20,by = 2)
+```
+In this assignment, questions 1 - 4 make use of data that is provided by the
+`mosaic` package.  (install mosaic package and load KidsFeet using data(KidsFeet) ). 
+```{r}
+#install.packages('mosaic')
+library(mosaic)
+data(KidsFeet)
+```
+
+
+## Question 1 - 30%
+This question makes use of package "plm", and load Crime dataset as following:
+```{r load_packages}
+#install.packages("plm")
+library(plm) 
+data(Crime)
+```
+
+a) Display the first 10 rows of crime and make note of all the variables.
+```{r}
+head(Crime, 10)
+```
+b) Calculate the mean, variance, and standard deviation of tax revenue per capita (taxpc) by omitting the missing values, if any.
+```{r}
+Crime$taxpc = na.omit(Crime$taxpc)
+cat('The mean is:', mean(Crime$taxpc))
+cat('\n\nThe variance is:', var(Crime$taxpc))
+cat('\n\nThe standard deviation is:', sd(Crime$taxpc))
+```
+c) Use `density` and `smsa` to predict tax per capita and build a univariate linear regression model, display a summary of your model indicating Residuals, Coefficients..etc. What can you say about your model? 
+```{r}
+model1 = with(Crime, lm(taxpc ~ density + smsa))
+summary(model1)
+
+#It appears that the intercept is equal to ~29.5, and the coefficients for 'density' and 'smsa' (with a value of 'yes') are -0.2345 and 11.2808, respectively. This indicates that as the density of people per square mile increases, the tax revenue per capita slightly decreases. As well, the coefficient of 11.2808 for 'smsayes' (standard metropolitan statistical area) shows a positive relationship between 'smsa' and the 'taxpc' value. The p-values indicate that the result for 'density' are not very significant (0.66), and the result for 'smsayes' is very significant (3.22e-05).
+
+#Finally, the adjusted R-squared value is 0.06305 (or 6%). This is very low, and indicates that the regression model explains a small percentage of the variation of the response data.
+```
+d)Based on the output of your model, write the equations based on the intercept and factors of `smsa` when `density` is set to 2.4, and compare the result with `predict()` function. Hint: Explore `predict()` function
+```{r}
+predictedNo = 29.5615 - 0.2345*(2.4)
+predictedYes = 29.5615 - 0.2345*(2.4) + 11.2808
+
+cat('Calculated average prediction with \'smsa\' = \'no\':', predictedNo)
+cat('\n\nCalculated average prediction with \'smsa\' = \'yes\':', predictedYes)
+
+predictiondf = data.frame(Crime$density, Crime$smsa)
+prediction = predict(model1, predictiondf)
+cat('\n\nAverage prediction for \'smsa\' = \'no\' using predict( ) function:', mean(prediction[Crime$smsa == 'no']))
+cat('\n\nAverage prediction for \'smsa\' = \'yes\' using predict( ) function:', mean(prediction[Crime$smsa == 'yes']))
+```
+
+e)Find Pearson correlation between tax per capita and density. Please comment on the result with a sentence.
+```{r}
+cat('Pearson correlation between tax per capita and density:', with(Crime, cor(taxpc, density)))
+
+#The correlation coefficient is positive, which means that there is a positive relationship between the two variables; as one increases, so does the other. The correlation between the two is not so great, however, as the maximum possible correlation is 1, and the correlation in this case is 1/5 of that. So, overall, there is slight positive correlation.
+```
+f)Write the correlation matrix of the variables: avgsen, polpc, density, taxpc. Hint: Explore the variables by ?Crime. Comment on the result with a sentence.
+```{r}
+cor(Crime[c("avgsen", "polpc", "density", "taxpc")])
+
+#It is clear that all variables are positively correlated (each increases with an increase in the other) with the exception of 'polpc' x 'density', which makes sense, as the number of police officers per person will decrease as the count of people per square mile increases.
+```
+
+
+## Question 2 -30%
+ 
+a) First and second midterm grades of some students are given as c(85,76,78,88,90,95,42,31) and c(55,76,48,58,80,75,32,22). Set R variables `first` and `second` respectively.
+```{r}
+first = c(85,76,78,88,90,95,42,31)
+second = c(55,76,48,58,80,75,32,22)
+```
+b) Apply the lm() function to observe the relationship between the first and the second midterm grades. Hint: Second midterm is the response variable.
+```{r}
+model2 = lm(second ~ first)
+summary(model2)
+```
+c) Find the second midterm grade of a student given that his/her first midterm grade is 72. Print the result by using print() function. 
+```{r}
+firstmarkdf = data.frame(first = 72)
+cat('Predicted second midterm grade if first grade was 72: ', predict(model2, firstmarkdf))
+```
+
+
+## Question 3 - 40%
+
+$\pi$ appears in the formula for the standard normal distribution, the most important probability distribution in statistics. Why not give it a try to calculate $\pi$ using statistics! In fact, you'll use a simulation technique called the *Monte Carlo Method*.
+
+Recall that the area of a circle of radius $r$ is $A = \pi r^2$. Therefore the area of a circle of radius 1, aka a *unit circle*, is $\pi$. You'll compute an approximation to the area of this circle using the Monte Carlo Method.
+
+a) The Monte Carlo Method uses random numbers to simulate some process. Here the process is throwing darts at a square. Assume the darts are uniformly distributed over the square. Imagine a unit circle enclosed by a square whose sides are of length 2. Set an R variable `area.square` to be the area of a square whose sides are of length 2.
+
+```{r}
+area.square = 2^2
+```
+b) The points of the square can be given x-y coordinates. Let both x and y range from -1 to +1 so that the square is centred on the origin of the coordinate system. Throw some darts at the square by generating random numeric vectors x and y, each of length `N = 10,000`. Set R variables `x` and `y` each to be uniformly distributed random numbers in the range -1 to +1.
+(hint: runif() generates random number for the uniform distribution)
+```{r}
+x = runif(10000, -1)
+y = runif(10000, -1)
+```
+c) Now count how many darts landed inside the unit circle. Recall that a point is inside the unit circle when $x^2 + y^2 < 1$. Save the result of successfull hits in a variable named hit. 
+(hint: a for loop over the length of x and y is one option to reach hit)
+```{r}
+hits = 0
+
+for (i in 1:length(x)) if (x[i]^2 + y[i]^2 < 1) hits = hits + 1
+cat('Successful hits:', hits)
+```
+d) The probability that a dart hits inside the circle is proportional to the ratio of the area of the circle to the area of the square. Use this fact to calculate an approximation to $\pi$ and print the result
+```{r}
+proportion = hits/length(x)
+cat('The approximation of the unit circle area is:', proportion * area.square)
+```
+Wow you got the first estimate for `pi` $\pi$, congratulations you have completed the first run of the Monte Carlo simulation.
+If there is further interest put all the above logic in a function, and call it 50 times store the results in a vector called pi then take the mean of pi vector. 
+
+montecarlo = function(numcalls = 50) {
+  pivector = numeric(numcalls)
+  area.square = 2^2
+
+  for (j in 1:numcalls) {
+    x = runif(10000, -1)
+    y = runif(10000, -1)
+    hits = 0
+    for (i in 1:length(x)) if (x[i]^2 + y[i]^2 < 1) hits = hits + 1
+    pivector[j] = hits
+  }
+  cat(pivector, '\n\nMean of hits using Monte Carlo:', mean(pivector))
+  
+  newvector = pivector
+  newvector = (newvector/length(x)) * area.square
+  cat('\n\nMean of unit circle area prediction:', mean(newvector))
+}
