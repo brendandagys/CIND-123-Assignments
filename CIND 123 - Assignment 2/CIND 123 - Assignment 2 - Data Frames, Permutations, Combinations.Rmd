@@ -1,0 +1,131 @@
+---
+title: 'CIND123 Winter 2018 - Assignment #2'
+author: "Brendan Dagys"
+date: "February 5, 2018"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+Use RStudio for this assignment. 
+Edit the file `assignment-2.Rmd` and insert your R code where wherever you see the string "INSERT YOUR ANSWER HERE"
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. 
+
+When your are done with your answers and before submitting, save the file with the following naming convention :your **Lastname_firstname**
+
+Submit **both** the rmd and the pdf output(or word or html) files, failing to submit **both** will be subject to mark deduction.
+
+This assignment may make use of data provided by the `ISwR` package.
+
+```{r}
+library(ISwR)
+```
+
+## Sample Question and Solution
+
+Use `seq()` to create the vector $(1,2,3,\ldots,10)$.
+
+```{r}
+seq(1,10)
+```
+
+******
+\newpage
+## Question 1 (50%)
+
+Consider the probability distribution associated with rolling 3 fair dice.
+We can label the faces of a single die using the numbers from 1 to 6.
+We can therefore label the simple events in this distribution by triples of numbers from 1 to 6.
+Let `d1`, `d2`, and `d3` represent the labels on each of the dice.
+
+a) Set `d1` to the sequence (1,2,...,6) repeated 36 times.
+
+```{r}
+d1 = rep(1:6, times = 36)
+```
+
+b) Set `d2` to the sequence consisting of 6 repetitions of the sequence in which each of the numbers (1,2,...,6) is repeated 6 times.
+
+```{r}
+d2 = rep(1:6, each = 6, times = 6)
+```
+
+c) Set `d3` to the sequence in which each of the numbers (1,2,...,6) is repeated 36 times.
+
+```{r}
+d3 = rep(1:6, each = 36)
+```
+d) Create a new data frame `three.dice` from `d1`, `d2`, and `d3` and print it.
+Visually confirm that there are $6 \times 6 \times 6 = 216$ rows and each row contains a unique combination of dice labels.
+
+```{r}
+three.dice = data.frame(d1, d2, d3)
+print(three.dice)
+```
+e) Since the dice are fair and independent, each simple event has the same probability, namely $\frac{1}{216}$. Add the column `P` to the data frame with this value.
+```{r}
+three.dice$P = 1/216
+```
+f) Add a new column `sum` equal to the sum of the dice labels.
+Add another new column `mean` equal to the average of the dice labels.
+
+```{r}
+three.dice$sum = d1 + d2 + d3
+three.dice$mean = (d1 + d2 + d3)/3
+```
+g) Plot a probability histogram of `three.dice$sum`.
+
+```{r}
+phistogram = hist(three.dice$sum, freq = 0, breaks = 2.5:18.5, main = "Probability Histogram of the Sums", xlab = "Sum", ylab = "Probability")
+phistogram$counts
+```
+h) Compute the probability that the sum of the dice is greater then 12 and less than 18.
+
+**HINT**: Use `subset()` to select the events and sum `P`.
+
+```{r}
+sum(subset(three.dice, sum > 12 & sum < 18, select = P))
+```
+i) Compute the probability that the sum is even.
+
+```{r}
+sum(subset(three.dice, sum %% 2 == 0, select = P))
+```
+j) Compute the probability that the mean is exactly 4.
+
+```{r}
+sum(subset(three.dice, mean == 4, select = P))
+```
+******
+\newpage
+## Question 2 (50%)
+a)You have two groups of distinctly different items, 10 in the first group and 8 in the second. If you select one item from each group, how many different pairs can you form?
+```{r}
+n = 10
+m = 8
+n * m
+```
+
+b)Evaluate the following permutation $P_{3}^5$
+```{r}
+choose(5, 3) * factorial(3)
+```
+
+c)Evaluate the following combinations $C_{3}^5 + C_{2}^5$
+```{r}
+choose(5, 3) + choose(5, 2)
+```
+d)In how many ways can you select five people from a group of eight if the order of selection is important?
+```{r}
+choose(8, 5) * factorial(5)
+```
+e)In how many ways can you select two people from a group of 20 if the order of selection is not important?
+```{r}
+choose(20, 2)
+```
+
+
+END of Assignment #2.
